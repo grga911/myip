@@ -6,6 +6,8 @@ from argparse import ArgumentParser
 from dns import resolver
 from pyperclip import copy as pcopy
 
+
+
 parser = ArgumentParser(description='Simple script for getting your wan ip address, using ipinfo api or via dns')
 
 parser.add_argument('-c', '--copy', action='store_true', help='copy ip address to clipboard')
@@ -26,6 +28,12 @@ def copy_to_clipboard(data):
 		text+=ip['ip']+'\n'
 	pcopy(str(text))
 # resolve my ip via dns
+
+def print_ips(ips):
+
+	for ip in ips:
+		print('IP Address: {}'.format(ip['ip']))
+
 def dns_info(ip):
 	if bool(DOMAIN_REGEX.search(ip)):
 		my_ip=[]
@@ -64,11 +72,12 @@ def main(ip=args['ip'],copy=args['copy'],location=args['location'],dns=args['dns
 	my_ip=dns_info(ip)
 	json_data = ipinfo(my_ip)
 	if location==True:
-		location_data = location_info(json_data)
+		location_info(json_data)
+	else:
+		print_ips(json_data)
 	if copy==True:
 		copy_to_clipboard(json_data)
-	for ip in json_data:
-		print('IP Address: {}'.format(ip['ip']))
+
 
 
 main()
