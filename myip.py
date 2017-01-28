@@ -41,11 +41,9 @@ def dns_info(ip):
 	return my_ip
 
 def ipinfo(ips):
-	ips=ips.split()
 	data=[]
 	for ip in ips:
 		url = 'http://ipinfo.io/'+ip+'/json'
-		print(url)
 		response = get_url(url)
 		data.append(response.json())
 	return data
@@ -71,6 +69,6 @@ def main(ip=args['ip'],copy=args['copy'],location=args['location'],dns=args['dns
 		copy_to_clipboard(json_data)
 	for ip in json_data:
 		print('IP Address: {}'.format(ip['ip']))
-	ipinfo('192.168.1.1')
+
 
 main()
