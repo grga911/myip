@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from dns import resolver
 from pyperclip import copy as pcopy
 
-# Parsing arguments passed to script
+# Parsing command line arguments passed to script
 
 parser = ArgumentParser(description='Simple script for getting your wan ip address, using ipinfo api or via dns')
 
