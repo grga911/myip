@@ -9,7 +9,7 @@ from pyperclip import copy as pcopy
 parser = ArgumentParser(description='Simple script for getting your wan ip address, using ipinfo api or via dns')
 
 parser.add_argument('-c', '--copy', action='store_true', help='copy ip address to clipboard')
-parser.add_argument('-l','--location',action='store_true',help='Show location information (currently working only with ipinfo api)')
+parser.add_argument('-l','--location',action='store_true',help='Show location information')
 parser.add_argument('-i','--ip',nargs='?',default='myip.opendns.com',help='Provide ip address instead')
 
 args=parser.parse_args()
