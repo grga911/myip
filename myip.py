@@ -1,4 +1,5 @@
 #!/usr/bin/env  python3
+import json
 from argparse import ArgumentParser
 
 from dns import resolver
@@ -12,10 +13,9 @@ parser = ArgumentParser( description = 'Simple script for getting your wan ip ad
 parser.add_argument( '-c', '--copy', action = 'store_true', help = 'copy ip address to clipboard' )
 parser.add_argument( '-l', '--location', action = 'store_true', help = 'Show location information' )
 parser.add_argument( '-i', '--ip', nargs = '?', default = 'myip.opendns.com', help = 'Provide ip address instead' )
+parser.add_argument( '-o', '--output', nargs = '+', default = '', help = 'Output results to a file' )
 
 args = parser.parse_args( )
-# Creating dictionary from arguments
-args = vars( args )
 # Setting up dns resolver
 MY_RESOLVER = resolver.Resolver( )
 # Using open dns server
@@ -57,29 +57,43 @@ def dns_info( ip ):
 def ipinfo( ips ):
 	'''Get info from ipinfo api'''
 	data = [ ]
-	for ip in ips:
-		url = 'http://ipinfo.io/' + ip + '/json'
-		response = get_url( url )
-		data.append( response.json( ) )
+	try:
+		for ip in ips:
+			url = 'http://ipinfo.io/' + ip + '/json'
+			response = get_url( url )
+			data.append( response.json( ) )
+	except (RuntimeError, TypeError, NameError) as error:
+		print( error )
 	return data
 
 
 def print_location_info( json_data ):
 	'''Format json result from ipinfo api and print it'''
-	for data in json_data:
-		IP = data[ 'ip' ]
-		city = data[ 'city' ]
-		country = data[ 'country' ]
-		coordinates = data[ 'loc' ]
-		org = data[ 'org' ]
-		print( 'Location info:\n' )
-		print( 'IP Address {0}\nCountry : {1} \nCity : {2}\nCoordinates {3}\nOrganization'.format( IP, country, city,
+	try:
+		json_data = json.loads( json_data )
+		for data in json_data:
+			IP = data[ 'ip' ]
+			city = data[ 'city' ]
+			country = data[ 'country' ]
+			coordinates = data[ 'loc' ]
+			org = data[ 'org' ]
+			print( 'Location info:\n' )
+			print(
+				'IP Address {0}\nCountry : {1} \nCity : {2}\nCoordinates {3}\nOrganization'.format( IP, country, city,
 		                                                                                           coordinates, org ) )
+	except:
+		print( 'Not a valid json, check domain or ip address' )
 
+
+def output_file( filename, data ):
+	'''Writing results as json to a file'''
+	with open( filename, 'a+' ) as file:
+		json.dump( data, file, sort_keys = True, indent = 4, separators = (',', ':'), ensure_ascii = False )
+	pass
 # We pass command line arguments to main function
-def main( ip = args[ 'ip' ], copy = args[ 'copy' ], location = args[ 'location' ] ):
+def main( ip = args.ip, copy = args.copy, location = args.location, out = args.output ):
 	# If location flag is off use dns_info and print_ips to print results
-	if location == False:
+	if not location:
 		# Query dns for ip information
 		my_ip = dns_info( ip )
 		print_ips( my_ip )
@@ -90,9 +104,11 @@ def main( ip = args[ 'ip' ], copy = args[ 'copy' ], location = args[ 'location' 
 		# Ipinfo doesn't require ip address, if left blank it would show wan ip
 		# But since we can provide either ip or domain name we need dns_info
 		my_ip = dns_info( ip )
-		json_data = ipinfo( my_ip )
+		json_data = json.dumps( ipinfo( my_ip ), sort_keys = True )
 		print_location_info( json_data )
-		if copy == True:
+		if out != '':
+			output_file( filename = out[ 0 ], data = json.loads( json_data ) )
+		if copy:
 			copy_to_clipboard( json_data )
 
 
