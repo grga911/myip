@@ -4,7 +4,6 @@ import ipaddress
 import json
 import sys
 from argparse import ArgumentParser
-
 from dns import resolver
 from pyperclip import copy as pcopy
 from requests import get as get_url
