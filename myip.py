@@ -39,12 +39,21 @@ parser.add_argument('-o', '--output',
                     default='',
                     help='Output results to a file')
 
+parser.add_argument('-g', '--gmap',
+                    action='store_true',
+                    help='Get google maps link')
+
 args = parser.parse_args()
 # Setting up dns resolver
 MY_RESOLVER = resolver.Resolver()
 # Using open dns server
 MY_RESOLVER.nameservers = ['208.67.222.222']
 
+def google_maps(coordinate):
+    # Get google maps url
+    gmap_url = 'https://www.google.com/maps?q=%40'
+    url = gmap_url + coordinate
+    return url
 
 def is_valid_ipv4_address(address):
     # Validate ip address
@@ -132,7 +141,7 @@ def output_json(filename, data):
 
 
 # We pass command line arguments to main function
-def main(ip=args.ip, copy=args.copy, location=args.location, out=args.output):
+def main(ip=args.ip, copy=args.copy, location=args.location, out=args.output, gmap=args.gmap):
     try:
         # Try to figure out if user passed ip or domain name,
         # either way get valid ip and pass it to ipinfo
@@ -153,6 +162,9 @@ def main(ip=args.ip, copy=args.copy, location=args.location, out=args.output):
             copy_to_clipboard(ip, my_ip_info)
         if out != '':
             output_json(filename=out[0], data=my_ip_info)
+        if gmap:
+            map_link = google_maps(my_ip_info['loc'])
+            print('Google maps link: ', map_link)
 
 
 main()
