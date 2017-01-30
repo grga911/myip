@@ -1,5 +1,6 @@
 #!/usr/bin/env  python
-'''Simple script to check wan ip address or to get information for ip address'''
+'''Simple script to check wan ip address
+ or to get information for ip address'''
 import ipaddress
 import json
 import sys
@@ -14,13 +15,29 @@ class NotDomain(Exception):
 
 # Parsing command line arguments passed to script
 
-parser = ArgumentParser(description = 'Simple script for getting your wan ip address, using ipinfo api or via dns')
+parser = ArgumentParser(
+                    description='Simple script for getting your wan ip address'
+                    ' or info for an ip address or domain, '
+                    'using ipinfo api or via dns')
 
-parser.add_argument('-c', '--copy', action = 'store_true', help = 'copy ip address to clipboard')
-parser.add_argument('-l', '--location', action = 'store_true', help = 'Show location information')
-parser.add_argument('-i', '--ip', nargs = '?', type = str, default = 'myip.opendns.com',
-                    help = 'Provide ip address instead')
-parser.add_argument('-o', '--output', nargs = '+', default = '', help = 'Output results to a file')
+parser.add_argument('-c', '--copy',
+                    action='store_true',
+                    help='copy ip address to clipboard')
+
+parser.add_argument('-l', '--location',
+                    action='store_true',
+                    help='Show location information')
+
+parser.add_argument('-i', '--ip',
+                    nargs='?',
+                    type=str,
+                    default='myip.opendns.com',
+                    help='Provide ip address instead')
+
+parser.add_argument('-o', '--output',
+                    nargs='+',
+                    default='',
+                    help='Output results to a file')
 
 args = parser.parse_args()
 # Setting up dns resolver
@@ -30,7 +47,7 @@ MY_RESOLVER.nameservers = ['208.67.222.222']
 
 
 def is_valid_ipv4_address(address):
-    #Validate ip address
+    # Validate ip address
     try:
         ipaddr = ipaddress.IPv4Address(address)
         return ipaddr.is_global
@@ -92,8 +109,13 @@ def print_location_info(data):
         org = data['org']
         host = data['hostname']
         print('Location info:\n')
-        print('IP Address {0}\nHostname {4}\nCountry : {1} \nCity : {2}\nCoordinates {3}\nOrganization'.format
-              (ip, country, city, coordinates, org, host))
+        print('IP Address {0}\n'
+              'Hostname {4}\n'
+              'Country : {1}\n'
+              'City : {2}\n'
+              'Coordinates {3}\n'
+              'Organization'
+              .format(ip, country, city, coordinates, org, host))
     except:
         print('Not a valid json, check domain or ip address')
 
@@ -101,14 +123,19 @@ def print_location_info(data):
 def output_json(filename, data):
     # Writing results as json to a file
     with open(filename, 'a+') as file:
-        json.dump(data, file, sort_keys = True, indent = 4, separators = (',', ':'), ensure_ascii = False)
+        json.dump(data, file,
+                  sort_keys=True,
+                  indent=4,
+                  separators=(',', ':'),
+                  ensure_ascii=False)
     pass
 
 
 # We pass command line arguments to main function
-def main(ip = args.ip, copy = args.copy, location = args.location, out = args.output):
+def main(ip=args.ip, copy=args.copy, location=args.location, out=args.output):
     try:
-        # Try to figure out if user passed ip or domain name, either way get valid ip and pass it to ipinfo
+        # Try to figure out if user passed ip or domain name,
+        # either way get valid ip and pass it to ipinfo
         my_ip = get_ip(ip)
         my_ip_info = ipinfo(my_ip)
     except:
@@ -119,13 +146,13 @@ def main(ip = args.ip, copy = args.copy, location = args.location, out = args.ou
             print_location_info(my_ip_info)
         else:
             if is_valid_ipv4_address(ip):
-                print('Domain or hostname: ', my_ip_info[ 'hostname'])
+                print('Domain or hostname: ', my_ip_info['hostname'])
             else:
                 print('IP address :', my_ip)
         if copy:
             copy_to_clipboard(ip, my_ip_info)
         if out != '':
-            output_json(filename = out[0], data = my_ip_info)
+            output_json(filename=out[0], data=my_ip_info)
 
 
-main( )
+main()
