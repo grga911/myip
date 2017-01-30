@@ -1,7 +1,8 @@
 #!/usr/bin/env  python3
-import json
-from argparse import ArgumentParser
 
+import json
+import pprint
+from argparse import ArgumentParser
 from dns import resolver
 from pyperclip import copy as pcopy
 from requests import get as get_url
@@ -21,71 +22,78 @@ MY_RESOLVER = resolver.Resolver( )
 # Using open dns server
 MY_RESOLVER.nameservers = [ '208.67.222.222' ]
 
+class NotDomainError(Exception):
+	def __init__(self, text="Not a domain error"):
+		self.text= text
+	def __str__(self):
+		return repr(self.text)
 
 def copy_to_clipboard( data ):
 	'''Format text and copy it to clipboard'''
 	text = ''
 	try:
-		for ip in data:
-			text += ip[ 'ip' ] + ',\n'
+		text += data[ 'hostname' ]
 	except:
-		for ip in data:
-			text += ip
+		text += data
 	pcopy( str( text ) )
 
 
-def print_ips( ips ):
+def print_ips( ip ):
 	'''Print ips'''
-	for ip in ips:
-		print( 'IP Address: {}'.format( ip ) )
+	print( 'IP Address: {}'.format( ip ) )
 
 
-def dns_info( ip ):
+def dns_info( ip):
 	'''Get ip info via dns, using myip.opendns.com'''
-	my_ip = [ ]
 	try:
 		my_answers = MY_RESOLVER.query( ip, "A" )
-		for ip in my_answers:
-			my_ip.append( str( ip ) )
 	except:
-		print( "Couldn't resolve address, trying with ip info" )
-		my_ip.append( ip )
-		ipinfo( my_ip )
+		raise Exception()
+	my_ip = str( my_answers[ 0 ] )
 	return my_ip
 
 
-def ipinfo( ips ):
+def ipinfo( ip ):
 	'''Get info from ipinfo api'''
-	data = [ ]
 	try:
-		for ip in ips:
-			url = 'http://ipinfo.io/' + ip + '/json'
-			response = get_url( url )
-			data.append( response.json( ) )
+		url = 'http://ipinfo.io/' + ip + '/json'
+		response = get_url( url )
+		data = response.json()
+		return data
 	except (RuntimeError, TypeError, NameError) as error:
 		print( error )
-	return data
 
-
-def print_location_info( json_data ):
+def get_ip(ip,loc,cp):
+	try:
+		my_ip=dns_info(ip)
+		if cp:
+			copy_to_clipboard(my_ip)
+		if not loc:
+			print_ips(my_ip)
+	except:
+		info=ipinfo(ip)
+		my_ip=info['ip']
+		if cp:
+			copy_to_clipboard(info)
+		if not loc:
+				print('Domain Name', info['hostname'])
+	return my_ip
+def print_location_info( data ):
 	'''Format json result from ipinfo api and print it'''
 	try:
-		json_data = json.loads( json_data )
-		for data in json_data:
-			IP = data[ 'ip' ]
-			city = data[ 'city' ]
-			country = data[ 'country' ]
-			coordinates = data[ 'loc' ]
-			org = data[ 'org' ]
-			print( 'Location info:\n' )
-			print(
-				'IP Address {0}\nCountry : {1} \nCity : {2}\nCoordinates {3}\nOrganization'.format( IP, country, city,
-		                                                                                           coordinates, org ) )
+		IP = data[ 'ip' ]
+		city = data[ 'city' ]
+		country = data[ 'country' ]
+		coordinates = data[ 'loc' ]
+		org = data[ 'org' ]
+		host = data['hostname']
+		print( 'Location info:\n' )
+		print('IP Address {0}\nHostname {4}\nCountry : {1} \nCity : {2}\nCoordinates {3}\nOrganization'.format( IP, country, city,coordinates, org, host ) )
 	except:
 		print( 'Not a valid json, check domain or ip address' )
 
 
-def output_file( filename, data ):
+def output_json( filename, data ):
 	'''Writing results as json to a file'''
 	with open( filename, 'a+' ) as file:
 		json.dump( data, file, sort_keys = True, indent = 4, separators = (',', ':'), ensure_ascii = False )
@@ -93,23 +101,11 @@ def output_file( filename, data ):
 # We pass command line arguments to main function
 def main( ip = args.ip, copy = args.copy, location = args.location, out = args.output ):
 	# If location flag is off use dns_info and print_ips to print results
-	if not location:
-		# Query dns for ip information
-		my_ip = dns_info( ip )
-		print_ips( my_ip )
-		if copy == True:
-			copy_to_clipboard( my_ip )
-	# else use ipinfo and print_location_info functions
-	else:
-		# Ipinfo doesn't require ip address, if left blank it would show wan ip
-		# But since we can provide either ip or domain name we need dns_info
-		my_ip = dns_info( ip )
-		json_data = json.dumps( ipinfo( my_ip ), sort_keys = True )
-		print_location_info( json_data )
+		my_ip = get_ip( ip,location,copy)
+		if location:
+			print_location_info(ipinfo(my_ip))
 		if out != '':
-			output_file( filename = out[ 0 ], data = json.loads( json_data ) )
-		if copy:
-			copy_to_clipboard( json_data )
-
+			out_json=ipinfo(my_ip)
+			output_json( filename = out[0], data = out_json )
 
 main( )
