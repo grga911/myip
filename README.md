@@ -1,6 +1,6 @@
 # myip
 
-Disclamer:
+Disclaimer:
 This script uses ipinfo api, which can be used for free up to 1000 queries a day.
 For more information go to http://ipinfo.io/developers/terms-of-use .
 
