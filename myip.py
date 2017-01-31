@@ -7,7 +7,7 @@ import ipaddress
 import json
 import sys
 import argparse
-from dns import resolver
+from socket import gethostbyname as dns_query
 from pyperclip import copy as pcopy
 from requests import get as get_url
 
@@ -32,7 +32,7 @@ parser.add_argument('-l', '--location',
 
 parser.add_argument('-i', '--ip',
                     nargs='+',
-                    default=['myip.opendns.com'],
+                    default=[''],
                     help='Provide ip address instead')
 
 parser.add_argument('-o', '--output',
@@ -49,10 +49,6 @@ parser.add_argument('-f', '--file',
                     help='Read list of ip addresses from file')
 
 args = parser.parse_args()
-# Setting up dns resolver
-MY_RESOLVER = resolver.Resolver()
-# Using open dns server
-MY_RESOLVER.nameservers = ['208.67.222.222']
 
 
 def google_maps(coordinate):
@@ -92,11 +88,11 @@ def copy_to_clipboard(text):
 def dns_info(domain):
     # Get ip info via dns, default(myip.opendns.com)
     try:
-        my_answers = MY_RESOLVER.query(domain, "A")
+        my_answers = dns_query(domain)
     except:
         raise NotDomain
     else:
-        my_ip = str(my_answers[0])
+        my_ip = str(my_answers)
     return my_ip
 
 
@@ -113,7 +109,7 @@ def ipinfo(ip):
 
 def get_ip(domain):
     # Resolve domain to ip or return ip if it's valid ipv4 address
-    if is_valid_ipv4_address(domain):
+    if is_valid_ipv4_address(domain) or domain == '':
         my_ip = domain
     else:
         try:
@@ -197,8 +193,8 @@ def main(ips=args.ip, copy=args.copy, location=args.location, out=args.output, g
                     ip = 'your ip'
                 print_location_info(my_ip_info, ip)
             else:
-                if ip == 'myip.opendns.com':
-                    print( 'Your IP : {}'.format(my_ip))
+                if ip == '':
+                    print( 'Your IP : {}'.format(my_ip_info['ip']))
                 elif is_valid_ipv4_address(ip):
                     print('Hostname of ip {}: {}'.format(ip, my_ip_info['hostname']))
                 else:
