@@ -1,88 +1,170 @@
-#!/usr/bin/python3
-from requests import get as get_url
+#!/usr/bin/env  python
+'''Simple script to check wan ip address
+ or to get information for ip address'''
+import ipaddress
+import json
+import sys
 from argparse import ArgumentParser
 from dns import resolver
 from pyperclip import copy as pcopy
+from requests import get as get_url
+
+
+class NotDomain(Exception):
+    pass
 
 # Parsing command line arguments passed to script
 
-parser = ArgumentParser(description='Simple script for getting your wan ip address, using ipinfo api or via dns')
+parser = ArgumentParser(
+                    description='Simple script for getting your wan ip address'
+                    ' or info for an ip address or domain, '
+                    'using ipinfo api or via dns')
 
-parser.add_argument('-c', '--copy', action='store_true', help='copy ip address to clipboard')
-parser.add_argument('-l','--location',action='store_true',help='Show location information')
-parser.add_argument('-i','--ip',nargs='?',default='myip.opendns.com',help='Provide ip address instead')
+parser.add_argument('-c', '--copy',
+                    action='store_true',
+                    help='copy ip address to clipboard')
 
-args=parser.parse_args()
-# Creating dictionary from arguments
-args=vars(args)
-#Setting up dns resolver
-MY_RESOLVER=resolver.Resolver()
-#Using open dns server
-MY_RESOLVER.nameservers=['208.67.222.222']
-#Copy results to clipboard
-def copy_to_clipboard(data):
-	text=''
-	try:
-		for ip in data:
-			text+=ip['ip']+',\n'
-	except:
-		for ip in data:
-			text+=ip
-	pcopy(str(text))
-#Function for printing ip addresses
-def print_ips(ips):
-	for ip in ips:
-		print('IP Address: {}'.format(ip))
-#Geting ip info from open dns via myip.opendns.com
-def dns_info(ip):
-	my_ip=[]
-	#Try to resolve via dns
-	try:
-		my_answers = MY_RESOLVER.query(ip, "A")
-		for ip in my_answers:
-			my_ip.append(str(ip))
-	#If you can't call ipinfo function
-	except:
-		print( "Couldn't resolve address, trying with ip info" )
-		my_ip.append(ip)
-		ipinfo(my_ip)
-	return my_ip
-#Getting ip info from ipinfo api
-def ipinfo(ips):
-	data=[]
-	for ip in ips:
-		url = 'http://ipinfo.io/'+ip+'/json'
-		response = get_url(url)
-		data.append(response.json())
-	return data
-#Function for printing json results from ipinfo api
-def print_location_info(json_data):
-	for data in json_data:
-		IP=data['ip']
-		city = data['city']
-		country=data['country']
-		coordinates=data['loc']
-		org=data['org']
-		print('Location info:\n')
-		print('IP Address {0}\nCountry : {1} \nCity : {2}\nCoordinates {3}\nOrganization'.format(IP,country,city,coordinates,org))
+parser.add_argument('-l', '--location',
+                    action='store_true',
+                    help='Show location information')
+
+parser.add_argument('-i', '--ip',
+                    nargs='?',
+                    type=str,
+                    default='myip.opendns.com',
+                    help='Provide ip address instead')
+
+parser.add_argument('-o', '--output',
+                    nargs='+',
+                    default='',
+                    help='Output results to a file')
+
+parser.add_argument('-g', '--gmap',
+                    action='store_true',
+                    help='Get google maps link')
+
+args = parser.parse_args()
+# Setting up dns resolver
+MY_RESOLVER = resolver.Resolver()
+# Using open dns server
+MY_RESOLVER.nameservers = ['208.67.222.222']
+
+def google_maps(coordinate):
+    # Get google maps url
+    gmap_url = 'https://www.google.com/maps?q=%40'
+    url = gmap_url + coordinate
+    return url
+
+def is_valid_ipv4_address(address):
+    # Validate ip address
+    try:
+        ipaddr = ipaddress.IPv4Address(address)
+        return ipaddr.is_global
+    except ipaddress.AddressValueError:
+        return False
+
+
+def copy_to_clipboard(ip, text):
+    # Format text and copy it to clipboard#
+    # If user provided ip address then copy hostname to clipboard
+    # else copy resolved ip address
+    if is_valid_ipv4_address(ip):
+        pcopy(text['hostname'])
+    else:
+        pcopy(str(text['ip']))
+
+
+def dns_info(domain):
+    # Get ip info via dns, default(myip.opendns.com)
+    try:
+        my_answers = MY_RESOLVER.query(domain, "A")
+    except:
+        raise NotDomain
+    else:
+        my_ip = str(my_answers[0])
+    return my_ip
+
+
+def ipinfo(ip):
+    # Get info from ipinfo api
+    url = 'http://ipinfo.io/' + ip + '/json'
+    response = get_url(url)
+    try:
+        data = response.json()
+        return data
+    except:
+        print('Check your input')
+
+
+def get_ip(domain):
+    if is_valid_ipv4_address(domain):
+        my_ip = domain
+    else:
+        try:
+            my_ip = dns_info(domain)
+        except NotDomain:
+            print("Couldn't resolve, check ip or domain")
+            sys.exit(1)
+    return my_ip
+
+
+def print_location_info(data):
+    # Format json result from ipinfo api and print it
+    try:
+        ip = data['ip']
+        city = data['city']
+        country = data['country']
+        coordinates = data['loc']
+        org = data['org']
+        host = data['hostname']
+        print('Location info:\n')
+        print('IP Address {0}\n'
+              'Hostname {4}\n'
+              'Country : {1}\n'
+              'City : {2}\n'
+              'Coordinates {3}\n'
+              'Organization'
+              .format(ip, country, city, coordinates, org, host))
+    except:
+        print('Not a valid json, check domain or ip address')
+
+
+def output_json(filename, data):
+    # Writing results as json to a file
+    with open(filename, 'a+') as file:
+        json.dump(data, file,
+                  sort_keys=True,
+                  indent=4,
+                  separators=(',', ':'),
+                  ensure_ascii=False)
+    pass
+
+
 # We pass command line arguments to main function
-def main(ip=args['ip'],copy=args['copy'],location=args['location']):
-	#If location flag is off use dns_info and print_ips to print results
-	if location==False:
-		# Query dns for ip information
-		my_ip = dns_info( ip )
-		print_ips(my_ip)
-		if copy == True:
-			copy_to_clipboard( my_ip )
-	#else use ipinfo and print_location_info functions
-	else:
-	#Ipinfo doesn't require ip address, if left blank it would show wan ip
-	#But since we can provide either ip or domain name we need dns_info
-		my_ip=dns_info(ip)
-		json_data = ipinfo( my_ip )
-		print_location_info(json_data)
-		if copy == True:
-			copy_to_clipboard( json_data )
+def main(ip=args.ip, copy=args.copy, location=args.location, out=args.output, gmap=args.gmap):
+    try:
+        # Try to figure out if user passed ip or domain name,
+        # either way get valid ip and pass it to ipinfo
+        my_ip = get_ip(ip)
+        my_ip_info = ipinfo(my_ip)
+    except:
+        print('Error occurred')
+    # If everything went fine, check for flags
+    else:
+        if location:
+            print_location_info(my_ip_info)
+        else:
+            if is_valid_ipv4_address(ip):
+                print('Domain or hostname: ', my_ip_info['hostname'])
+            else:
+                print('IP address :', my_ip)
+        if copy:
+            copy_to_clipboard(ip, my_ip_info)
+        if out != '':
+            output_json(filename=out[0], data=my_ip_info)
+        if gmap:
+            map_link = google_maps(my_ip_info['loc'])
+            print('Google maps link: ', map_link)
 
-# Calling main function
+
 main()
