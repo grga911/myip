@@ -1,5 +1,9 @@
 # myip
 
+Disclamer:
+This script uses ipinfo api, which can be used for free up to 1000 queries a day.
+For more information go to http://ipinfo.io/developers/terms-of-use .
+
 usage: myip.py [-h] [-c] [-l] [-i [IP]]
 
 Simple script for getting your wan ip address, using ipinfo api or via dns
