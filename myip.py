@@ -49,11 +49,13 @@ MY_RESOLVER = resolver.Resolver()
 # Using open dns server
 MY_RESOLVER.nameservers = ['208.67.222.222']
 
+
 def google_maps(coordinate):
     # Get google maps url
     gmap_url = 'https://www.google.com/maps?q=%40'
     url = gmap_url + coordinate
     return url
+
 
 def is_valid_ipv4_address(address):
     # Validate ip address
