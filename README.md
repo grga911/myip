@@ -20,4 +20,3 @@ optional arguments:
                       ipinfo api)
                       
   -i [IP], --ip [IP]  Provide ip address instead
-
