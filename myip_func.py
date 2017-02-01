@@ -4,18 +4,12 @@ Set of functions used by myip
 
 from socket import gethostbyname as dns_query
 from pyperclip import copy as pcopy
-from requests import get as get_url
 import ipaddress
 import sys
 
+
 class NotDomain(Exception):
     pass
-
-def google_maps(coordinate):
-    # Get google maps url
-    gmap_url = 'https://www.google.com/maps?q=%40'
-    url = gmap_url + coordinate
-    return url
 
 
 def is_valid_ipv4_address(address):
@@ -56,17 +50,6 @@ def dns_info(domain):
     else:
         my_ip = str(my_answers)
     return my_ip
-
-
-def ipinfo(ip):
-    # Get info from ipinfo api
-    url = 'http://ipinfo.io/' + ip + '/json'
-    response = get_url(url)
-    try:
-        data = response.json()
-        return data
-    except:
-        print('Check your input')
 
 
 def get_ip(domain):
