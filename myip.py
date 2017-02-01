@@ -170,10 +170,13 @@ def main(ips=args.ip, copy=args.copy, location=args.location, out=args.output, g
     copy_data = []
     ip_list = []
     # Create list of ip addresses to process
-    if file:
+    if file and ips!=['']:
         for f in file:
             ip_list = open_file(f)
         ip_list.extend(ips)
+    elif file:
+        for f in file:
+            ip_list = open_file(f)
     else:
         ip_list = ips
 
