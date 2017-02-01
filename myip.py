@@ -1,9 +1,7 @@
 #!/usr/bin/env  python
-'''
-Simple script to check wan ip address
-or to get information for ip address
-'''
+
 from myip_func import *
+from myip_class import *
 import argparse
 
 
@@ -24,7 +22,6 @@ parser.add_argument('-l', '--location',
 
 parser.add_argument('-i', '--ip',
                     nargs='+',
-                    default=[''],
                     help='Provide ip address instead')
 
 parser.add_argument('-o', '--output',
@@ -46,45 +43,45 @@ args = parser.parse_args()
 # We pass command line arguments to main function
 def main(ips=args.ip, copy=args.copy, location=args.location, out=args.output, gmap=args.gmap, file=args.file):
     copy_data = []
-    ip_list = []
+    ip_check_list = []
+    ip_list = {}
     # Create list of ip addresses to process
-    if file and ips!=['']:
+    if not ips and not file:
+        ip_list['Your ip'] = ''
+    if file:
         for f in file:
-            ip_list = open_file(f)
-        ip_list.extend(ips)
-    elif file:
-        for f in file:
-            ip_list = open_file(f)
-    else:
-        ip_list = ips
+            ip_check_list = read_from_file(f)
+    if ips:
+        ip_check_list.extend(ips)
 
-    for ip in ip_list:
+    for i in ip_check_list:
+        ip = get_ip(i)
+        if ip:
+            ip_list[i] = ip
+
+    for name, ip in ip_list.items():
         try:
             # Try to figure out if user passed ip or domain name,
             # either way get valid ip and pass it to ipinfo
-            my_ip = get_ip(ip)
-            my_ip_info = ipinfo(my_ip)
-            copy_data.append(copy_info(ip, my_ip_info))
+            my_ip = Myip(name, ip)
+            my_ip_info = my_ip.info
+            copy_data.append(copy_info(name, my_ip_info))
         except:
-            pass
+            print('Something went wrong!')
         # If everything went fine, check for flags
         else:
             if location:
-                if ip == 'myip.opendns.com':
-                    ip = 'your ip'
-                print_location_info(my_ip_info, ip)
+                print(my_ip)
             else:
-                if ip == '':
-                    print( 'Your IP : {}'.format(my_ip_info['ip']))
-                elif is_valid_ipv4_address(ip):
-                    print('Hostname of ip {}: {}'.format(ip, my_ip_info['hostname']))
+                if is_valid_ipv4_address(name):
+                    print('{} info: {}'.format(name, my_ip.hostname))
                 else:
-                    print( 'IP address for {}: {}'.format(ip, my_ip))
+                    print('{} info: {}'.format(name, my_ip.ip))
             if out != '':
-                output_json(filename=out[0], data=my_ip_info)
+                my_ip.write_to_file(filename=out[0])
             if gmap:
-                map_link = google_maps(my_ip_info['loc'])
-                print('Google maps link for {}: {}\n'.format(ip, map_link))
+                map_link = my_ip.google_maps()
+                print('Google maps link for {}: {}\n'.format(name, map_link))
     if copy:
         copy_to_clipboard(copy_data)
 main()

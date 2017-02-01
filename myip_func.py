@@ -6,7 +6,6 @@ from socket import gethostbyname as dns_query
 from pyperclip import copy as pcopy
 from requests import get as get_url
 import ipaddress
-import json
 import sys
 
 class NotDomain(Exception):
@@ -29,10 +28,11 @@ def is_valid_ipv4_address(address):
 
 
 def copy_info(ip, text):
+    copy_data = {}
     if is_valid_ipv4_address(ip):
-        copy_data = (text['hostname'])
+        copy_data[text['ip']] = text['hostname']
     else:
-        copy_data = (str(text['ip']))
+        copy_data[text['hostname']] = text['ip']
     return copy_data
 
 
@@ -41,8 +41,9 @@ def copy_to_clipboard(text):
     # If user provided ip address then copy hostname to clipboard
     # else copy resolved ip address
     copy_data = ''
-    for i in text:
-        copy_data += i + ' \n'
+    for data in text:
+        for name, ip in data.items():
+            copy_data += name + ' : ' + ip + ' \n'
     pcopy(str(copy_data))
 
 
@@ -70,57 +71,25 @@ def ipinfo(ip):
 
 def get_ip(domain):
     # Resolve domain to ip or return ip if it's valid ipv4 address
-    if is_valid_ipv4_address(domain) or domain == '':
+    if is_valid_ipv4_address(domain):
         my_ip = domain
+        return my_ip
     else:
         try:
             my_ip = dns_info(domain)
+            return my_ip
         except NotDomain:
             print("Couldn't resolve {}, check ip or domain\n".format(domain))
-            sys.exit(1)
-    return my_ip
 
 
-def print_location_info(data, name):
-    # Format json result from ipinfo api and print it
-    try:
-        ip = data['ip']
-        city = data['city']
-        country = data['country']
-        coordinates = data['loc']
-        org = data['org']
-        host = data['hostname']
-        print('Location info for {0}:\n\n'
-              'IP Address {1}\n'
-              'Hostname {2}\n'
-              'Country : {3}\n'
-              'City : {4}\n'
-              'Coordinates {5}\n'
-              'Organization{6}\n'
-              .format(name, ip, host, country, city, coordinates, org))
-    except:
-        print('Not a valid json, check domain or ip address')
-
-
-def output_json(filename, data):
-    # Writing results as json to a file
-    with open(filename, 'a+') as file:
-        json.dump(data, file,
-                  sort_keys=True,
-                  indent=4,
-                  separators=(',', ':'),
-                  ensure_ascii=False)
-
-
-def open_file(file):
+def read_from_file(file):
     my_ips_list = []
     try:
         with open(file, mode = 'r') as f:
             for ip in f.readlines():
                 my_ips_list.append(ip)
+        my_ips_list = [i.strip() for i in my_ips_list]
     except IOError:
         print('Could not read file')
         sys.exit(1)
-    else:
-        my_ips_list = [i.strip() for i in my_ips_list]
-        return my_ips_list
+    return my_ips_list
