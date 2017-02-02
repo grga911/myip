@@ -6,7 +6,7 @@
 
 <body>
 
-<h3>Myip</h3>
+<h2>Myip</h2>
 
 <h5>Simple script for getting your wan ip address or info for an ip address or
     domain, using ipinfo api or via dns</h5>
