@@ -1,29 +1,9 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Read Me</title>
-
-    <style type="text/css">
-        .usage{
-            margin-top: 30px;
-            margin-left: 15px;
-            word-spacing: 10px;
-        }
-        .opt th{
-            text-align: left;
-            width: 50%;
-        }
-        .dis{
-                hanging-punctuation: first;
-                font-weight: bold;
-                border: 10px red;
-        }
-
-
-    </style>
-
+    <title></title>
 </head>
+
 <body>
 
 <h3>Myip</h3>
@@ -31,7 +11,7 @@
 <h5>Simple script for getting your wan ip address or info for an ip address or
     domain, using ipinfo api or via dns</h5>
 
-<div class="dis">
+<div style="font-weight: bold;">
     <h3>Disclaimer:</h3>
     <p>
         This script uses ipinfo api, which can be used for free up to 1000 queries a day.
@@ -43,16 +23,16 @@
 
 <p>Demo avaiable at <a href="https://asciinema.org/a/9jmu3058rtzvtwhf6ql8twk2n">asciinema</a> .</p>
 
-<div class="usage">
+<div style="margin-top: 30px;margin-left: 15px;word-spacing: 10px;">
     <p>usage: myip.py [-h] [-c] [-l] [-i IP [IP ...]] [-o OUTPUT] [-g] [-f FILE]</p>
 </div>
 
-<div class="opt">
+<div>
     <table>
-        <caption>optional arguments:</caption>
+        <caption style="text-align: left;margin-top: 30px;margin-bottom: 30px;">Optional arguments:</caption>
         <tr>
-            <th>Argument</th>
-            <th>Usage</th>
+            <th style="text-align: left;width: 50%;">Argument</th>
+            <th style="text-align: left;width: 50%;">Usage</th>
         </tr>
         <tr>
             <td>-h, --help</td>
