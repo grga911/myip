@@ -17,11 +17,11 @@
         This script uses ipinfo api, which can be used for free up to 1000 queries a day.
     </p>
     <p>
-        For more information go to <a href="http://ipinfo.io/developers/terms-of-use">ipinfo terms of use</a>.
+        For more information go to <a target="_blank" href="http://ipinfo.io/developers/terms-of-use">ipinfo terms of use</a>.
     </p>
 </div>
 
-<p>Demo avaiable at <a href="https://asciinema.org/a/9jmu3058rtzvtwhf6ql8twk2n">asciinema</a> .</p>
+<p>Demo avaiable at <a target="_blank" href="https://asciinema.org/a/9jmu3058rtzvtwhf6ql8twk2n">asciinema</a> .</p>
 
 <div style="margin-top: 30px;margin-left: 15px;word-spacing: 10px;">
     <p>usage: myip.py [-h] [-c] [-l] [-i IP [IP ...]] [-o OUTPUT] [-g] [-f FILE]</p>
