@@ -8,5 +8,5 @@ setup(
 	license = 'MIT',
 	author = 'grga911',
 	author_email = '',
-	description = 'Simple scipt for getting your wan ip', install_requires = [ 'dnspython', 'pyperclip', 'requests' ]
+	description = 'Simple scipt for getting your wan ip', install_requires = ['pyperclip', 'requests' ]
 )
