@@ -12,6 +12,7 @@ Simple script for getting your wan ip address or info for an ip address or
 domain, using ipinfo api or via dns
 
 optional arguments:
+
   -h, --help                        show this help message and exit
   
   -c, --copy                        copy ip address to clipboard
