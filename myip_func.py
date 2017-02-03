@@ -76,3 +76,40 @@ def read_from_file(file):
         print('Could not read file')
         sys.exit(1)
     return my_ips_list
+
+
+def print_info(location, my_ip, name):
+    if location:
+        print( my_ip )
+    else:
+        # If user passed ip address print out hostname
+        if is_valid_ipv4_address( name ):
+            print( '{} info: {}'.format( name, my_ip.hostname ) )
+        # Else print out ip address
+        else:
+            print( '{} info: {}'.format( name, my_ip.ip ) )
+
+def create_ip_list(ips, file):
+    ip_check_list = []
+    ip_list = {}
+    # Create list of ip addresses to process
+    # If no args are passed just set default value for ip_list
+    if not ips and not file:
+        ip_list['Your ip'] = ''
+    # If file is passed process it and create list of ips for checking
+    elif file:
+        for f in file:
+            ip_check_list = read_from_file(f)
+    # If ips are passed as optional arguments create list for checking
+    elif ips:
+        ip_check_list.extend(ips)
+    # Check every ip or domain from list and create dictionary
+    # of passed values and their ips.
+    # Exp. {'facebook.com': '31.13.92.36', '8.8.8.8' : '8.8.8.8' }
+    # This can be later used to format output
+    for i in ip_check_list:
+        ip = get_ip(i)
+        if ip:
+            ip_list[i] = ip
+
+    return ip_list

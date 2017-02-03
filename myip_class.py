@@ -8,7 +8,7 @@ class Myip:
     """
     def __init__(self, name, ip):
         self._name = name
-        self.__info = self.__ipinfo(ip)
+        self.__info = self.ipinfo(ip)
         self._ip = self.info['ip']
         self._hostname = self.info['hostname']
         self._loc = self.info['loc']
@@ -46,7 +46,7 @@ class Myip:
         return str(url)
 
     @staticmethod
-    def __ipinfo(ip):
+    def ipinfo(ip):
         # Get info from ipinfo api
         url = 'http://ipinfo.io/' + ip + '/json'
         response = get_url(url)
@@ -95,3 +95,7 @@ class Myip:
     def ip(self):
 
         return self._ip
+
+    @property
+    def write(self):
+        return self.write
