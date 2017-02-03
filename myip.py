@@ -26,7 +26,6 @@ parser.add_argument('-i', '--ip',
 
 parser.add_argument('-o', '--output',
                     nargs=1,
-                    default='',
                     help='Output results to a file')
 
 parser.add_argument('-g', '--gmap',
@@ -37,11 +36,22 @@ parser.add_argument('-f', '--file',
                     nargs=1,
                     help='Read list of ip addresses from file')
 
+parser.add_argument('-of', '--output-format',
+                    choices=['csv', 'json'],
+                    default='json')
+
 args = parser.parse_args()
 
 
 # We pass command line arguments to main function
-def main(ips=args.ip, copy=args.copy, location=args.location, out=args.output, gmap=args.gmap, file=args.file):
+def main(ips=args.ip,
+         copy=args.copy,
+         location=args.location,
+         out=args.output,
+         gmap=args.gmap,
+         file=args.file,
+         out_format=args.output_format):
+
     copy_data = []
     # Check and create dictionary of valid ip addresses
     ip_list = create_ip_list(ips, file)
@@ -50,7 +60,6 @@ def main(ips=args.ip, copy=args.copy, location=args.location, out=args.output, g
         try:
             # Create instance of Myip class
             my_ip = Myip(name, ip)
-            my_ip.ipinfo(ip)
             # Create list of values to be copied into clipboard if needed
             copy_data.append(copy_info(name, my_ip.info))
         except:
@@ -60,9 +69,13 @@ def main(ips=args.ip, copy=args.copy, location=args.location, out=args.output, g
             # Main print Function
             print_info(location, my_ip, name)
             # Check for other flags
-            if out != '':
-                # Write results to file
-                my_ip.write_to_file(filename=out[0])
+            if out:
+                filename = out[0]
+                # Write results to json file
+                if out_format == 'json':
+                    my_ip.write_to_json(filename)
+                elif out_format == 'csv':
+                    my_ip.write_to_csv(filename)
             if gmap:
                 map_link = my_ip.google_maps()
                 print('Google maps link for {}: {}\n'.format(name, map_link))

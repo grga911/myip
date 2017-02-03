@@ -1,5 +1,6 @@
 from requests import get as get_url
 import json
+import csv
 
 
 class Myip:
@@ -26,7 +27,7 @@ class Myip:
                 'Organization : {6}\n'\
                 .format(self.name, self.ip, self.hostname, self.country, self.city, self.loc, self.org)
 
-    def write_to_file(self, filename):
+    def write_to_json(self, filename):
         data = self.info
         # Writing results as json to a file
         with open(filename, 'a+') as file:
@@ -36,6 +37,32 @@ class Myip:
                       indent=4,
                       separators=(',', ':'),
                       ensure_ascii=False)
+
+
+    def write_to_csv(self, filename):
+        data = self.info
+        # Key values for header
+        fieldnames = []
+        for key in data.keys():
+            fieldnames.append(key)
+        # Append data to file if file is not empty
+        # Create file if it doesn't exist
+        with open(filename, 'a+') as csvfile:
+            # Object for writing data into csv
+            writer = csv.DictWriter(csvfile, fieldnames = fieldnames)
+            # Verify if file has header
+            try:
+                # Object for verifying data
+                sample = csv.Sniffer()
+                # Set pointer to the start of file
+                csvfile.seek(0)
+                # If file has header returns true, if file is empty
+                # raises csv.Error, and then we write header to the file
+                sample.has_header(csvfile.readline())
+            except csv.Error:
+                writer.writeheader()
+            # Write data to the rows
+            writer.writerow(data)
 
     def google_maps(self):
         # Get google maps url
@@ -99,3 +126,4 @@ class Myip:
     @property
     def write(self):
         return self.write
+    

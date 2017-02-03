@@ -80,14 +80,15 @@ def read_from_file(file):
 
 def print_info(location, my_ip, name):
     if location:
-        print( my_ip )
+        print(my_ip)
     else:
         # If user passed ip address print out hostname
-        if is_valid_ipv4_address( name ):
-            print( '{} info: {}'.format( name, my_ip.hostname ) )
+        if is_valid_ipv4_address(name):
+            print( '{} info: {}'.format(name, my_ip.hostname))
         # Else print out ip address
         else:
-            print( '{} info: {}'.format( name, my_ip.ip ) )
+            print( '{} info: {}'.format(name, my_ip.ip))
+
 
 def create_ip_list(ips, file):
     ip_check_list = []
