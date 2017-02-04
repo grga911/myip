@@ -37,6 +37,7 @@ parser.add_argument('-f', '--file',
                     help='Read list of ip addresses from file')
 
 parser.add_argument('-of', '--output-format',
+                    help='Set output format', 
                     choices=['csv', 'json'],
                     default='json')
 

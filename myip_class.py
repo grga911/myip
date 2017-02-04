@@ -126,4 +126,3 @@ class Myip:
     @property
     def write(self):
         return self.write
-    
