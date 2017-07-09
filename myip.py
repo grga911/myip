@@ -26,7 +26,6 @@ parser.add_argument('-i', '--ip',
 
 parser.add_argument('-o', '--output',
                     nargs=1,
-                    default='',
                     help='Output results to a file')
 
 parser.add_argument('-g', '--gmap',
@@ -37,48 +36,47 @@ parser.add_argument('-f', '--file',
                     nargs=1,
                     help='Read list of ip addresses from file')
 
+parser.add_argument('-of', '--output-format',
+                    help='Set output format', 
+                    choices=['csv', 'json'],
+                    default='json')
+
 args = parser.parse_args()
 
 
 # We pass command line arguments to main function
-def main(ips=args.ip, copy=args.copy, location=args.location, out=args.output, gmap=args.gmap, file=args.file):
+def main(ips=args.ip,
+         copy=args.copy,
+         location=args.location,
+         out=args.output,
+         gmap=args.gmap,
+         file=args.file,
+         out_format=args.output_format):
+
     copy_data = []
-    ip_check_list = []
-    ip_list = {}
-    # Create list of ip addresses to process
-    if not ips and not file:
-        ip_list['Your ip'] = ''
-    if file:
-        for f in file:
-            ip_check_list = read_from_file(f)
-    if ips:
-        ip_check_list.extend(ips)
-
-    for i in ip_check_list:
-        ip = get_ip(i)
-        if ip:
-            ip_list[i] = ip
-
+    # Check and create dictionary of valid ip addresses
+    ip_list = create_ip_list(ips, file)
+    # Go through dictionary and get information from ipinfo
     for name, ip in ip_list.items():
         try:
-            # Try to figure out if user passed ip or domain name,
-            # either way get valid ip and pass it to ipinfo
+            # Create instance of Myip class
             my_ip = Myip(name, ip)
-            my_ip_info = my_ip.info
-            copy_data.append(copy_info(name, my_ip_info))
+            # Create list of values to be copied into clipboard if needed
+            copy_data.append(copy_info(name, my_ip.info))
         except:
             print('Something went wrong!')
         # If everything went fine, check for flags
         else:
-            if location:
-                print(my_ip)
-            else:
-                if is_valid_ipv4_address(name):
-                    print('{} info: {}'.format(name, my_ip.hostname))
-                else:
-                    print('{} info: {}'.format(name, my_ip.ip))
-            if out != '':
-                my_ip.write_to_file(filename=out[0])
+            # Main print Function
+            print_info(location, my_ip, name)
+            # Check for other flags
+            if out:
+                filename = out[0]
+                # Write results to json file
+                if out_format == 'json':
+                    my_ip.write_to_json(filename)
+                elif out_format == 'csv':
+                    my_ip.write_to_csv(filename)
             if gmap:
                 map_link = my_ip.google_maps()
                 print('Google maps link for {}: {}\n'.format(name, map_link))
